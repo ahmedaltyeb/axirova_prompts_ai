@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Axirova Prompt Architect AI
 
-## Getting Started
+Arabic-first AI prompt engineering SaaS. Turns a simple idea — in Arabic or English — into a Professional, Advanced, and Short prompt variant, a recommended AI tool, an explanation, and improvement suggestions. Tuned for Gulf business context (industry, audience, and cultural tone detection).
 
-First, run the development server:
+## Stack
+
+- **Frontend:** Next.js 15 (App Router), TypeScript, Tailwind CSS v4, shadcn/ui (Base UI primitives)
+- **Backend:** Next.js Server Actions, Prisma ORM
+- **Database:** Supabase Postgres
+- **Auth:** Supabase Auth (email/password)
+- **AI:** Provider abstraction (`src/lib/ai`) with a fully functional rule-based Arabic/English engine by default, plus optional OpenAI/Anthropic adapters
+
+## Getting started
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Set up Supabase
+
+1. Create a project at [supabase.com](https://supabase.com).
+2. Copy `.env.example` to `.env` and fill in:
+   - `DATABASE_URL` / `DIRECT_URL` — from Project Settings → Database → Connection string (pooled + direct).
+   - `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` — from Project Settings → API.
+3. In Supabase Auth settings, enable email/password sign-in (enabled by default). Disabling "Confirm email" simplifies local testing.
+
+### 3. Run migrations and seed data
+
+```bash
+npm run db:migrate
+npm run db:seed
+```
+
+This creates the schema and seeds the 9 prompt categories and 3 AI provider rows (`rule-based`, `openai`, `anthropic`).
+
+### 4. Run the app
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## AI providers
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The app ships with a **rule-based engine** (`src/lib/ai/providers/rule-based.ts`) that requires no API keys — it does real Arabic-script detection, industry/audience/platform/Gulf-market keyword matching, and template-based prompt generation. This is the default and always available.
 
-## Learn More
+To enable live LLM generation, add either key to `.env`:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+OPENAI_API_KEY="sk-..."
+ANTHROPIC_API_KEY="sk-ant-..."
+DEFAULT_AI_PROVIDER="openai"   # or "anthropic"
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Users can also pick their preferred provider per-account from **Settings → AI Model Selection** — unavailable providers (no key configured) are shown disabled with a "Requires API key" badge. If a live provider call fails, the app automatically falls back to the rule-based engine.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project structure
 
-## Deploy on Vercel
+```
+prisma/schema.prisma         Database schema (User, Prompt, PromptCategory, PromptHistory, AIProvider, UserSettings)
+prisma/seed.ts                Seeds categories + AI providers
+src/app/(marketing)/          Landing page
+src/app/(auth)/                Login / signup
+src/app/(app)/                 Dashboard, Workspace, History, Saved, Categories, Settings (auth-guarded)
+src/components/                UI primitives (shadcn) + landing/dashboard/workspace/auth/settings components
+src/lib/ai/                    Provider abstraction + rule-based Arabic intelligence engine
+src/lib/auth/                  Supabase session helpers, sync-user, server actions
+src/lib/i18n/                  Arabic/English dictionaries, cookie-based locale, RTL wiring
+src/lib/prompts/               Prompt queries, server actions, category/state mappers
+src/lib/settings/              Profile/language/AI-provider server actions
+src/lib/supabase/              Browser/server/middleware Supabase clients
+src/middleware.ts              Session refresh + route guarding
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the dev server |
+| `npm run build` | Production build (typecheck + lint included) |
+| `npm run db:migrate` | Run Prisma migrations |
+| `npm run db:seed` | Seed categories + AI providers |
+| `npm run db:studio` | Open Prisma Studio |
+
+## Notes
+
+- The interface defaults to Arabic (RTL). Language preference is stored per-user in `UserSettings` and mirrored to a `NEXT_LOCALE` cookie; switch it from the navbar or Settings.
+- Pricing on the landing page is a placeholder (`Coming soon`) — no billing is wired up yet.
+- Auth-guarded routes (`/dashboard`, `/workspace`, `/history`, `/saved`, `/categories`, `/settings`) require a real Supabase project — they redirect to `/login` otherwise.

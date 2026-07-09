@@ -1,0 +1,152 @@
+// Axirova Prompt Architect AI — database schema
+// Learn more about Prisma schema: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+/// Mirrors the Supabase auth user. `id` is the Supabase auth UID.
+model User {
+  id        String   @id
+  email     String   @unique
+  fullName  String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  prompts  Prompt[]
+  settings UserSettings?
+
+  @@map("users")
+}
+
+enum PromptCategoryKey {
+  MARKETING
+  BUSINESS
+  CODING
+  DESIGN
+  IMAGE_GENERATION
+  VIDEO_GENERATION
+  WRITING
+  RESEARCH
+  AUTOMATION
+}
+
+model PromptCategory {
+  id     String            @id @default(cuid())
+  key    PromptCategoryKey @unique
+  nameEn String
+  nameAr String
+  icon   String?
+
+  prompts Prompt[]
+
+  @@map("prompt_categories")
+}
+
+enum PromptLanguage {
+  AR
+  EN
+}
+
+model Prompt {
+  id     String  @id @default(cuid())
+  userId String
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  categoryId String?
+  category   PromptCategory? @relation(fields: [categoryId], references: [id])
+
+  title     String
+  rawInput  String         @db.Text
+  language  PromptLanguage
+
+  // Analysis
+  goal           String?
+  industry       String?
+  audience       String?
+  platform       String?
+  requiredOutput String?
+  missingInfo    String[]
+
+  // Generated output
+  professionalPrompt     String   @db.Text
+  advancedPrompt         String   @db.Text
+  shortPrompt            String   @db.Text
+  recommendedTool        String?
+  explanation            String?  @db.Text
+  improvementSuggestions String[]
+
+  aiProviderId String?
+  aiProvider   AIProvider? @relation(fields: [aiProviderId], references: [id])
+
+  isSaved    Boolean @default(false)
+  isFavorite Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  history PromptHistory[]
+
+  @@index([userId])
+  @@index([categoryId])
+  @@map("prompts")
+}
+
+enum PromptHistoryAction {
+  CREATED
+  EDITED
+  REGENERATED
+  SAVED
+  EXPORTED
+}
+
+model PromptHistory {
+  id       String @id @default(cuid())
+  promptId String
+  prompt   Prompt @relation(fields: [promptId], references: [id], onDelete: Cascade)
+
+  action    PromptHistoryAction
+  snapshot  Json?
+  createdAt DateTime            @default(now())
+
+  @@index([promptId])
+  @@map("prompt_history")
+}
+
+model AIProvider {
+  id       String   @id @default(cuid())
+  key      String   @unique
+  name     String
+  isActive Boolean  @default(true)
+  models   String[]
+
+  prompts          Prompt[]
+  preferredBy      UserSettings[]
+
+  @@map("ai_providers")
+}
+
+model UserSettings {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  language PromptLanguage @default(AR)
+  theme    String         @default("system")
+  region   String         @default("gulf")
+
+  preferredProviderId String?
+  preferredProvider   AIProvider? @relation(fields: [preferredProviderId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_settings")
+}
