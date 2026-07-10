@@ -33,7 +33,7 @@ npm run db:migrate
 npm run db:seed
 ```
 
-This creates the schema and seeds the 9 prompt categories and 3 AI provider rows (`rule-based`, `openai`, `anthropic`).
+This creates the schema and seeds the 9 prompt categories and 4 AI provider rows (`rule-based`, `openai`, `anthropic`, `gemini`).
 
 ### 4. Run the app
 
@@ -47,12 +47,13 @@ Visit `http://localhost:3000`.
 
 The app ships with a **rule-based engine** (`src/lib/ai/providers/rule-based.ts`) that requires no API keys — it does real Arabic-script detection, industry/audience/platform/Gulf-market keyword matching, and template-based prompt generation. This is the default and always available.
 
-To enable live LLM generation, add either key to `.env`:
+To enable live LLM generation, add any of these keys to `.env`:
 
 ```bash
 OPENAI_API_KEY="sk-..."
 ANTHROPIC_API_KEY="sk-ant-..."
-DEFAULT_AI_PROVIDER="openai"   # or "anthropic"
+GEMINI_API_KEY="..."
+DEFAULT_AI_PROVIDER="openai"   # or "anthropic" / "gemini"
 ```
 
 Users can also pick their preferred provider per-account from **Settings → AI Model Selection** — unavailable providers (no key configured) are shown disabled with a "Requires API key" badge. If a live provider call fails, the app automatically falls back to the rule-based engine.

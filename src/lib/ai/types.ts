@@ -41,7 +41,7 @@ export interface GeneratedPromptSet {
 }
 
 export interface AIProviderAdapter {
-  key: "rule-based" | "openai" | "anthropic";
+  key: "rule-based" | "openai" | "anthropic" | "gemini";
   label: string;
   isAvailable(): boolean;
   analyze(input: PromptAnalysisInput): Promise<PromptAnalysisResult>;

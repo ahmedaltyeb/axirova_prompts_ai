@@ -38,6 +38,12 @@ const providers = [
     isActive: true,
     models: ["claude-sonnet-5", "claude-opus-4-8"],
   },
+  {
+    key: "gemini",
+    name: "Google Gemini",
+    isActive: true,
+    models: ["gemini-2.0-flash", "gemini-2.0-pro"],
+  },
 ];
 
 async function main() {
