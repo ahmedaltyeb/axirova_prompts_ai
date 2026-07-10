@@ -2,7 +2,7 @@ import type { AIProviderAdapter, PromptAnalysisInput } from "../types";
 import { analyze } from "../engine/analyze";
 import { generatePromptSet } from "../engine/generate";
 import { generatedPromptSetSchema } from "../engine/schema";
-import { buildLLMInstructions } from "../engine/llm-instructions";
+import { buildLLMInstructions, buildImageLLMInstructions } from "../engine/llm-instructions";
 
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 
@@ -23,7 +23,19 @@ export const anthropicProvider: AIProviderAdapter = {
       return generatePromptSet(input, analysisResult);
     }
 
-    const { system, user } = buildLLMInstructions(input, analysisResult);
+    const { system, user } = input.image
+      ? buildImageLLMInstructions(input, analysisResult)
+      : buildLLMInstructions(input, analysisResult);
+
+    const userContent = input.image
+      ? [
+          {
+            type: "image",
+            source: { type: "base64", media_type: input.image.mimeType, data: input.image.base64 },
+          },
+          { type: "text", text: user },
+        ]
+      : user;
 
     try {
       const response = await fetch(ANTHROPIC_URL, {
@@ -37,7 +49,7 @@ export const anthropicProvider: AIProviderAdapter = {
           model: process.env.ANTHROPIC_MODEL || "claude-sonnet-5",
           max_tokens: 2048,
           system,
-          messages: [{ role: "user", content: user }],
+          messages: [{ role: "user", content: userContent }],
         }),
       });
 

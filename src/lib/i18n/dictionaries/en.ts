@@ -198,6 +198,12 @@ const en = {
       categoryPlaceholder: "Select a category (optional)",
       generate: "Generate Prompt",
       generating: "Analyzing...",
+      attachImage: "Attach image",
+      removeImage: "Remove image",
+      imageModeLabel: "How should the image be used?",
+      imageModeDescribe: "Describe this image",
+      imageModeSimilar: "Generate similar",
+      imageCaptionPlaceholder: "Optional caption or extra detail about the image",
     },
     analysisPanel: {
       title: "AI Analysis",

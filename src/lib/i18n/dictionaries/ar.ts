@@ -187,6 +187,12 @@ const ar: Dictionary = {
       categoryPlaceholder: "اختر تصنيفًا (اختياري)",
       generate: "توليد الأمر",
       generating: "جارٍ التحليل...",
+      attachImage: "إرفاق صورة",
+      removeImage: "إزالة الصورة",
+      imageModeLabel: "كيف تريد استخدام الصورة؟",
+      imageModeDescribe: "وصف هذه الصورة",
+      imageModeSimilar: "توليد صورة مشابهة",
+      imageCaptionPlaceholder: "وصف اختياري أو تفاصيل إضافية عن الصورة",
     },
     analysisPanel: {
       title: "تحليل الذكاء الاصطناعي",

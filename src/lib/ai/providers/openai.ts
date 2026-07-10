@@ -2,7 +2,7 @@ import type { AIProviderAdapter, PromptAnalysisInput } from "../types";
 import { analyze } from "../engine/analyze";
 import { generatePromptSet } from "../engine/generate";
 import { generatedPromptSetSchema } from "../engine/schema";
-import { buildLLMInstructions } from "../engine/llm-instructions";
+import { buildLLMInstructions, buildImageLLMInstructions } from "../engine/llm-instructions";
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 
@@ -20,7 +20,16 @@ export const openaiProvider: AIProviderAdapter = {
       return generatePromptSet(input, analysisResult);
     }
 
-    const { system, user } = buildLLMInstructions(input, analysisResult);
+    const { system, user } = input.image
+      ? buildImageLLMInstructions(input, analysisResult)
+      : buildLLMInstructions(input, analysisResult);
+
+    const userContent = input.image
+      ? [
+          { type: "text", text: user },
+          { type: "image_url", image_url: { url: `data:${input.image.mimeType};base64,${input.image.base64}` } },
+        ]
+      : user;
 
     try {
       const response = await fetch(OPENAI_URL, {
@@ -34,7 +43,7 @@ export const openaiProvider: AIProviderAdapter = {
           response_format: { type: "json_object" },
           messages: [
             { role: "system", content: system },
-            { role: "user", content: user },
+            { role: "user", content: userContent },
           ],
         }),
       });

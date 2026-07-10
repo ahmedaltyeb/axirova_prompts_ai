@@ -38,11 +38,13 @@ export function ResultPanel({
   isPending,
   promptId,
   initialSaved = false,
+  imageUrl = null,
 }: {
   result: GeneratedPromptSet | null;
   isPending: boolean;
   promptId: string | null;
   initialSaved?: boolean;
+  imageUrl?: string | null;
 }) {
   const dictionary = useDictionary();
   const [isSaved, setIsSaved] = useState(initialSaved);
@@ -79,6 +81,15 @@ export function ResultPanel({
           <p className="text-sm text-muted-foreground">{dictionary.workspace.resultPanel.empty}</p>
         ) : (
           <div className="space-y-6">
+            {imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={imageUrl}
+                alt=""
+                className="h-32 w-32 rounded-lg border border-border object-cover"
+              />
+            )}
+
             <Tabs defaultValue="professional">
               <TabsList>
                 <TabsTrigger value="professional">{dictionary.workspace.resultPanel.professional}</TabsTrigger>

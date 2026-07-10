@@ -30,5 +30,6 @@ export function promptToState(
       explanation: prompt.explanation ?? "",
       improvementSuggestions: prompt.improvementSuggestions,
     },
+    imageUrl: prompt.imageUrl,
   };
 }

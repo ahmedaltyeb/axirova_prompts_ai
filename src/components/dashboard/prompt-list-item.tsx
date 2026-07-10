@@ -25,6 +25,14 @@ export function PromptListItem({
 
   return (
     <div className="flex items-center gap-2 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/50">
+      {prompt.imageUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={prompt.imageUrl}
+          alt=""
+          className="size-12 shrink-0 rounded-lg border border-border object-cover"
+        />
+      )}
       <Link href={`/workspace/${prompt.id}`} className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className="truncate font-medium text-foreground">{prompt.title}</p>

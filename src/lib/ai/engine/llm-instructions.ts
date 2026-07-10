@@ -35,3 +35,39 @@ export function buildLLMInstructions(input: PromptAnalysisInput, analysis: Promp
 
   return { system, user };
 }
+
+/**
+ * Same JSON-contract system prompt as buildLLMInstructions, but for image-attached
+ * requests. The image itself is sent separately as a provider-native vision content
+ * part; this only builds the surrounding text instructions.
+ */
+export function buildImageLLMInstructions(input: PromptAnalysisInput, analysis: PromptAnalysisResult) {
+  const mode = input.image?.mode ?? "describe";
+  const language = analysis.language === "ar" ? "Arabic" : "English";
+
+  const modeInstruction =
+    mode === "describe"
+      ? "The user attached a reference image. Reverse-engineer it into a detailed prompt that would let an AI model reproduce this exact image as closely as possible — subject, composition, style, lighting, colors, and mood."
+      : "The user attached a reference image as inspiration. Analyze its subject, style, mood, and composition, then write a prompt for generating a NEW, DIFFERENT piece that shares that style — do not describe or reproduce the exact same image.";
+
+  const system =
+    "You are the prompt-generation engine behind Axirova Prompt Architect AI, an Arabic-first prompt " +
+    "engineering SaaS for Gulf-region creators, marketers, and business owners. " +
+    modeInstruction +
+    " Also weigh any optional caption text the user provided alongside the image. Produce three prompt " +
+    "variants (Professional, Advanced, Short), a recommended AI tool (favor image-generation tools like " +
+    "Midjourney or DALL·E when relevant), a short explanation, and improvement suggestions. Respond ONLY " +
+    "with a single JSON object matching this exact shape, no markdown fences, no commentary: " +
+    '{"professionalPrompt": string, "advancedPrompt": string, "shortPrompt": string, "recommendedTool": string, ' +
+    '"explanation": string, "improvementSuggestions": string[]}. ' +
+    `Write every field in ${language}.`;
+
+  const user = JSON.stringify({
+    caption: input.rawInput || null,
+    mode,
+    language: analysis.language,
+    category: analysis.detectedCategory,
+  });
+
+  return { system, user };
+}

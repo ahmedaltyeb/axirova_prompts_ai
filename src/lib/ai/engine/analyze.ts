@@ -17,15 +17,15 @@ function countMatches(text: string, keywords: string[]): number {
   return keywords.reduce((count, keyword) => (lower.includes(keyword.toLowerCase()) ? count + 1 : count), 0);
 }
 
-function detectCategory(text: string, hint?: CategoryKey): CategoryKey {
+function detectCategory(text: string, hint?: CategoryKey, fallback: CategoryKey = "BUSINESS"): CategoryKey {
   if (hint) return hint;
 
-  let best: { key: CategoryKey; score: number } = { key: "BUSINESS", score: 0 };
+  let best: { key: CategoryKey; score: number } = { key: fallback, score: 0 };
   for (const [key, sets] of Object.entries(CATEGORY_KEYWORDS) as [CategoryKey, { ar: string[]; en: string[] }][]) {
     const score = countMatches(text, [...sets.ar, ...sets.en]);
     if (score > best.score) best = { key, score };
   }
-  return best.score > 0 ? best.key : "BUSINESS";
+  return best.score > 0 ? best.key : fallback;
 }
 
 function detectIndustry(
@@ -102,7 +102,8 @@ const GOAL_VERB: Record<CategoryKey, { ar: string; en: string }> = {
 
 export function analyze(input: PromptAnalysisInput): PromptAnalysisResult {
   const language = input.language ?? detectLanguage(input.rawInput);
-  const detectedCategory = detectCategory(input.rawInput, input.categoryHint);
+  const fallbackCategory: CategoryKey = input.image ? "IMAGE_GENERATION" : "BUSINESS";
+  const detectedCategory = detectCategory(input.rawInput, input.categoryHint, fallbackCategory);
 
   const industryMatch = detectIndustry(input.rawInput, language);
   const audience = detectAudience(input.rawInput, language) ?? industryMatch?.impliedAudience ?? null;

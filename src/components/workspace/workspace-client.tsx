@@ -30,6 +30,7 @@ export function WorkspaceClient({
   const analysis = state.status === "success" ? state.analysis : null;
   const result = state.status === "success" ? state.result : null;
   const promptId = state.status === "success" ? state.promptId : null;
+  const imageUrl = state.status === "success" ? state.imageUrl : null;
   const error = state.status === "error" ? state.error : undefined;
 
   return (
@@ -45,7 +46,13 @@ export function WorkspaceClient({
         error={error}
       />
       <AnalysisPanel dictionary={dictionary} analysis={analysis} isPending={isPending} />
-      <ResultPanel result={result} isPending={isPending} promptId={promptId} initialSaved={initialSaved} />
+      <ResultPanel
+        result={result}
+        isPending={isPending}
+        promptId={promptId}
+        initialSaved={initialSaved}
+        imageUrl={imageUrl}
+      />
     </div>
   );
 }

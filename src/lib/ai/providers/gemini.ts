@@ -2,7 +2,7 @@ import type { AIProviderAdapter, PromptAnalysisInput } from "../types";
 import { analyze } from "../engine/analyze";
 import { generatePromptSet } from "../engine/generate";
 import { generatedPromptSetSchema } from "../engine/schema";
-import { buildLLMInstructions } from "../engine/llm-instructions";
+import { buildLLMInstructions, buildImageLLMInstructions } from "../engine/llm-instructions";
 
 const GEMINI_URL = (model: string) =>
   `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
@@ -21,8 +21,14 @@ export const geminiProvider: AIProviderAdapter = {
       return generatePromptSet(input, analysisResult);
     }
 
-    const { system, user } = buildLLMInstructions(input, analysisResult);
+    const { system, user } = input.image
+      ? buildImageLLMInstructions(input, analysisResult)
+      : buildLLMInstructions(input, analysisResult);
     const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+
+    const userParts = input.image
+      ? [{ text: user }, { inlineData: { mimeType: input.image.mimeType, data: input.image.base64 } }]
+      : [{ text: user }];
 
     try {
       const response = await fetch(`${GEMINI_URL(model)}?key=${process.env.GEMINI_API_KEY}`, {
@@ -30,7 +36,7 @@ export const geminiProvider: AIProviderAdapter = {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: system }] },
-          contents: [{ role: "user", parts: [{ text: user }] }],
+          contents: [{ role: "user", parts: userParts }],
           generationConfig: { responseMimeType: "application/json" },
         }),
       });

@@ -5,11 +5,15 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { requireUser } from "@/lib/auth/get-current-user";
 import { getAIProvider } from "@/lib/ai/provider";
-import type { CategoryKey, GeneratedPromptSet, PromptAnalysisResult } from "@/lib/ai/types";
+import { uploadPromptImage } from "@/lib/supabase/storage";
+import type { CategoryKey, GeneratedPromptSet, ImageMode, PromptAnalysisResult } from "@/lib/ai/types";
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 const generateSchema = z.object({
-  rawInput: z.string().trim().min(3).max(2000),
+  rawInput: z.string().trim().max(2000),
   categoryHint: z.string().optional(),
+  imageMode: z.enum(["describe", "similar"]).optional(),
 });
 
 export type GeneratePromptState =
@@ -21,6 +25,7 @@ export type GeneratePromptState =
       title: string;
       analysis: PromptAnalysisResult;
       result: GeneratedPromptSet;
+      imageUrl: string | null;
     };
 
 export async function generatePromptAction(
@@ -30,10 +35,18 @@ export async function generatePromptAction(
   const user = await requireUser();
 
   const parsed = generateSchema.safeParse({
-    rawInput: formData.get("rawInput"),
+    rawInput: formData.get("rawInput") ?? "",
     categoryHint: formData.get("categoryHint") || undefined,
+    imageMode: formData.get("imageMode") || undefined,
   });
   if (!parsed.success) {
+    return { status: "error", error: "Please describe your request or attach an image." };
+  }
+
+  const imageFile = formData.get("image");
+  const hasImage = imageFile instanceof File && imageFile.size > 0;
+
+  if (!hasImage && parsed.data.rawInput.length < 3) {
     return { status: "error", error: "Please describe your request (at least 3 characters)." };
   }
 
@@ -41,9 +54,45 @@ export async function generatePromptAction(
     parsed.data.categoryHint && parsed.data.categoryHint !== "auto"
       ? (parsed.data.categoryHint as CategoryKey)
       : undefined;
-  const input = { rawInput: parsed.data.rawInput, categoryHint };
 
   const provider = getAIProvider(user.settings?.preferredProvider?.key);
+
+  if (hasImage && provider.key === "rule-based") {
+    return {
+      status: "error",
+      error:
+        "Image analysis requires an AI provider with vision support. Pick OpenAI, Claude, or Gemini in Settings → AI Model Selection.",
+    };
+  }
+
+  let imageBase64: string | undefined;
+  let imageMimeType: string | undefined;
+  let uploadedImageUrl: string | null = null;
+  const imageMode: ImageMode = parsed.data.imageMode ?? "describe";
+
+  if (hasImage) {
+    const file = imageFile as File;
+    if (!file.type.startsWith("image/")) {
+      return { status: "error", error: "The attached file must be an image." };
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      return { status: "error", error: "Image is too large — please attach one under 5MB." };
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    imageBase64 = buffer.toString("base64");
+    imageMimeType = file.type;
+    uploadedImageUrl = await uploadPromptImage(user.id, buffer, file.type);
+  }
+
+  const input = {
+    rawInput: parsed.data.rawInput,
+    categoryHint,
+    image:
+      hasImage && imageBase64 && imageMimeType
+        ? { base64: imageBase64, mimeType: imageMimeType, mode: imageMode }
+        : undefined,
+  };
 
   const analysis = await provider.analyze(input);
   const result = await provider.generate(input, analysis);
@@ -62,6 +111,8 @@ export async function generatePromptAction(
       title,
       rawInput: parsed.data.rawInput,
       language: analysis.language === "ar" ? "AR" : "EN",
+      imageUrl: uploadedImageUrl,
+      imageMode: hasImage ? (imageMode === "describe" ? "DESCRIBE" : "SIMILAR") : null,
       goal: analysis.goal,
       industry: analysis.industry,
       audience: analysis.audience,
@@ -91,6 +142,7 @@ export async function generatePromptAction(
     title: prompt.title,
     analysis,
     result,
+    imageUrl: uploadedImageUrl,
   };
 }
 
