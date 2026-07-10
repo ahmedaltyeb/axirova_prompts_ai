@@ -37,10 +37,10 @@ export function LanguageSwitcher() {
         {locale === "ar" ? dictionary.common.arabic : dictionary.common.english}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onSelect={() => switchTo("ar")}>
+        <DropdownMenuItem onClick={() => switchTo("ar")}>
           {dictionary.common.arabic}
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => switchTo("en")}>
+        <DropdownMenuItem onClick={() => switchTo("en")}>
           {dictionary.common.english}
         </DropdownMenuItem>
       </DropdownMenuContent>
