@@ -1,6 +1,6 @@
 # Axirova Prompt Architect AI
 
-Arabic-first AI prompt engineering SaaS. Turns a simple idea — in Arabic or English — into a Professional, Advanced, and Short prompt variant, a recommended AI tool, an explanation, and improvement suggestions. Tuned for Gulf business context (industry, audience, and cultural tone detection).
+Arabic-first AI prompt engineering SaaS. Turns a simple idea — text, an uploaded image, or both — into a Professional, Advanced, and Short prompt variant, a recommended AI tool, an explanation, and improvement suggestions. Tuned for Gulf business context (industry, audience, and cultural tone detection).
 
 ## Stack
 
@@ -23,7 +23,8 @@ npm install
 1. Create a project at [supabase.com](https://supabase.com).
 2. Copy `.env.example` to `.env` and fill in:
    - `DATABASE_URL` / `DIRECT_URL` — from Project Settings → Database → Connection string (pooled + direct).
-   - `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` — from Project Settings → API.
+   - `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` — from Project Settings → API.
+   - `SUPABASE_SERVICE_ROLE_KEY` — same page. Used server-side for uploading prompt reference images to Supabase Storage (a public `prompt-images` bucket is created automatically on first upload). Keep this secret; never expose it to the client.
 3. In Supabase Auth settings, enable email/password sign-in (enabled by default). Disabling "Confirm email" simplifies local testing.
 
 ### 3. Run migrations and seed data
@@ -57,6 +58,14 @@ DEFAULT_AI_PROVIDER="openai"   # or "anthropic" / "gemini"
 ```
 
 Users can also pick their preferred provider per-account from **Settings → AI Model Selection** — unavailable providers (no key configured) are shown disabled with a "Requires API key" badge. If a live provider call fails, the app automatically falls back to the rule-based engine.
+
+### Image upload
+
+The Workspace also accepts an attached reference image (alongside or instead of text), in two modes:
+- **Describe this image** — reverse-engineers the exact image into a prompt that would reproduce it.
+- **Generate similar** — writes a prompt for a new, related piece in a similar style, not a copy.
+
+Image understanding requires a vision-capable provider (OpenAI, Anthropic, or Gemini) — the rule-based engine can't process images, so attaching one while on `rule-based` returns a friendly error asking you to pick another provider in Settings.
 
 ## Project structure
 
