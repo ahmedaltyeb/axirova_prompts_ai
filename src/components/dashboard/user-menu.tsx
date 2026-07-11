@@ -1,11 +1,13 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import { useTransition } from "react";
+import { LogOut, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -26,6 +28,11 @@ function initials(name: string) {
 export function UserMenu({ fullName, email }: { fullName: string | null; email: string }) {
   const dictionary = useDictionary();
   const displayName = fullName || email;
+  const [isPending, startTransition] = useTransition();
+
+  function handleSignOut() {
+    startTransition(() => signOutAction());
+  }
 
   return (
     <DropdownMenu>
@@ -36,14 +43,14 @@ export function UserMenu({ fullName, email }: { fullName: string | null; email: 
         <span className="hidden max-w-32 truncate text-sm font-medium sm:inline">{displayName}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="truncate">{email}</DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="truncate">{email}</DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <form action={signOutAction}>
-          <DropdownMenuItem render={<button type="submit" className="w-full" />}>
-            <LogOut className="size-4" />
-            {dictionary.common.signOut}
-          </DropdownMenuItem>
-        </form>
+        <DropdownMenuItem onClick={handleSignOut} disabled={isPending}>
+          {isPending ? <Loader2 className="size-4 animate-spin" /> : <LogOut className="size-4" />}
+          {dictionary.common.signOut}
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
