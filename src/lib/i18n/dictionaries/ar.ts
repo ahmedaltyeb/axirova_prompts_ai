@@ -147,6 +147,8 @@ const ar: Dictionary = {
     },
   },
   auth: {
+    continueWithGoogle: "المتابعة باستخدام جوجل",
+    orContinueWithEmail: "أو تابع عبر البريد الإلكتروني",
     login: {
       title: "مرحبًا بعودتك",
       subtitle: "سجّل الدخول لمتابعة إنشاء الأوامر.",

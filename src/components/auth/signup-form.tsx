@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { signUpAction } from "@/lib/auth/actions";
 import { useDictionary } from "@/lib/i18n/locale-provider";
+import { GoogleButton } from "./google-button";
 
 export function SignupForm() {
   const dictionary = useDictionary();
@@ -21,6 +22,14 @@ export function SignupForm() {
         <CardDescription>{dictionary.auth.signup.subtitle}</CardDescription>
       </CardHeader>
       <CardContent>
+        <GoogleButton />
+
+        <div className="my-4 flex items-center gap-3">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground">{dictionary.auth.orContinueWithEmail}</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
         <form action={formAction} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="fullName">{dictionary.common.fullName}</Label>

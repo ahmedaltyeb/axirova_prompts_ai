@@ -157,6 +157,8 @@ const en = {
     },
   },
   auth: {
+    continueWithGoogle: "Continue with Google",
+    orContinueWithEmail: "Or continue with email",
     login: {
       title: "Welcome back",
       subtitle: "Sign in to continue building prompts.",
