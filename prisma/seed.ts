@@ -42,7 +42,7 @@ const providers = [
     key: "gemini",
     name: "Google Gemini",
     isActive: true,
-    models: ["gemini-2.0-flash", "gemini-2.0-pro"],
+    models: ["gemini-flash-latest", "gemini-pro-latest"],
   },
 ];
 

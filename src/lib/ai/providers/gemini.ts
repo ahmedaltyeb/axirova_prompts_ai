@@ -24,7 +24,7 @@ export const geminiProvider: AIProviderAdapter = {
     const { system, user } = input.image
       ? buildImageLLMInstructions(input, analysisResult)
       : buildLLMInstructions(input, analysisResult);
-    const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+    const model = process.env.GEMINI_MODEL || "gemini-flash-latest";
 
     const userParts = input.image
       ? [{ text: user }, { inlineData: { mimeType: input.image.mimeType, data: input.image.base64 } }]
