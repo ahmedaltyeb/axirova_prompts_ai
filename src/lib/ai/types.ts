@@ -11,12 +11,9 @@ export type CategoryKey =
   | "RESEARCH"
   | "AUTOMATION";
 
-export type ImageMode = "describe" | "similar";
-
 export interface PromptImageInput {
   base64: string;
   mimeType: string;
-  mode: ImageMode;
 }
 
 export interface PromptAnalysisInput {

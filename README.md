@@ -59,11 +59,9 @@ DEFAULT_AI_PROVIDER="openai"   # or "anthropic" / "gemini"
 
 Users can also pick their preferred provider per-account from **Settings → AI Model Selection** — unavailable providers (no key configured) are shown disabled with a "Requires API key" badge. If a live provider call fails, the app automatically falls back to the rule-based engine.
 
-### Image upload
+### Reference image upload
 
-The Workspace also accepts an attached reference image (alongside or instead of text), in two modes:
-- **Describe this image** — reverse-engineers the exact image into a prompt that would reproduce it.
-- **Generate similar** — writes a prompt for a new, related piece in a similar style, not a copy.
+The Workspace also accepts an attached reference image (alongside or instead of text) — a UI mockup, a logo, a code or error screenshot, packaging, a diagram, anything. The image is never assumed to have a fixed purpose (there's no "describe" vs. "generate similar" mode); the AI infers how to use it purely from your own written request. If you attach an image with no text, it infers the most literal, useful intent directly from what the image shows.
 
 Image understanding requires a vision-capable provider (OpenAI, Anthropic, or Gemini) — the rule-based engine can't process images, so attaching one while on `rule-based` returns a friendly error asking you to pick another provider in Settings.
 

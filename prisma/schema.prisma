@@ -55,11 +55,6 @@ enum PromptLanguage {
   EN
 }
 
-enum PromptImageMode {
-  DESCRIBE
-  SIMILAR
-}
-
 model Prompt {
   id     String  @id @default(cuid())
   userId String
@@ -73,7 +68,6 @@ model Prompt {
   language  PromptLanguage
 
   imageUrl  String?
-  imageMode PromptImageMode?
 
   // Analysis
   goal           String?

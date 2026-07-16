@@ -6,14 +6,13 @@ import { prisma } from "@/lib/db/prisma";
 import { requireUser } from "@/lib/auth/get-current-user";
 import { getAIProvider } from "@/lib/ai/provider";
 import { uploadPromptImage } from "@/lib/supabase/storage";
-import type { CategoryKey, GeneratedPromptSet, ImageMode, PromptAnalysisResult } from "@/lib/ai/types";
+import type { CategoryKey, GeneratedPromptSet, PromptAnalysisResult } from "@/lib/ai/types";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 const generateSchema = z.object({
   rawInput: z.string().trim().max(2000),
   categoryHint: z.string().optional(),
-  imageMode: z.enum(["describe", "similar"]).optional(),
 });
 
 export type GeneratePromptState =
@@ -37,7 +36,6 @@ export async function generatePromptAction(
   const parsed = generateSchema.safeParse({
     rawInput: formData.get("rawInput") ?? "",
     categoryHint: formData.get("categoryHint") || undefined,
-    imageMode: formData.get("imageMode") || undefined,
   });
   if (!parsed.success) {
     return { status: "error", error: "Please describe your request or attach an image." };
@@ -68,7 +66,6 @@ export async function generatePromptAction(
   let imageBase64: string | undefined;
   let imageMimeType: string | undefined;
   let uploadedImageUrl: string | null = null;
-  const imageMode: ImageMode = parsed.data.imageMode ?? "describe";
 
   if (hasImage) {
     const file = imageFile as File;
@@ -90,7 +87,7 @@ export async function generatePromptAction(
     categoryHint,
     image:
       hasImage && imageBase64 && imageMimeType
-        ? { base64: imageBase64, mimeType: imageMimeType, mode: imageMode }
+        ? { base64: imageBase64, mimeType: imageMimeType }
         : undefined,
   };
 
@@ -112,7 +109,6 @@ export async function generatePromptAction(
       rawInput: parsed.data.rawInput,
       language: analysis.language === "ar" ? "AR" : "EN",
       imageUrl: uploadedImageUrl,
-      imageMode: hasImage ? (imageMode === "describe" ? "DESCRIBE" : "SIMILAR") : null,
       goal: analysis.goal,
       industry: analysis.industry,
       audience: analysis.audience,

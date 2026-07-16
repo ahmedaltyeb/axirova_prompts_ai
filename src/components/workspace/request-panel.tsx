@@ -13,11 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 import { categoryLabel } from "@/lib/prompts/category-label";
 import type { Dictionary } from "@/lib/i18n/dictionaries/en";
 import type { PromptCategory } from "@prisma/client";
-import type { ImageMode } from "@/lib/ai/types";
 
 export function RequestPanel({
   dictionary,
@@ -38,7 +36,6 @@ export function RequestPanel({
 }) {
   const [category, setCategory] = useState(defaultCategory);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageMode, setImageMode] = useState<ImageMode>("describe");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -80,6 +77,7 @@ export function RequestPanel({
           </div>
 
           <div className="space-y-2">
+            <Label>{dictionary.workspace.requestPanel.referenceImage}</Label>
             <input
               ref={fileInputRef}
               type="file"
@@ -90,48 +88,22 @@ export function RequestPanel({
             />
 
             {imagePreview ? (
-              <div className="space-y-3">
-                <div className="relative w-fit">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={imagePreview}
-                    alt=""
-                    className="h-32 w-32 rounded-lg border border-border object-cover"
-                  />
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="icon-sm"
-                    className="absolute -end-2 -top-2 rounded-full"
-                    onClick={removeImage}
-                  >
-                    <X className="size-3.5" />
-                  </Button>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label>{dictionary.workspace.requestPanel.imageModeLabel}</Label>
-                  <div className="flex gap-2">
-                    {(["describe", "similar"] as const).map((mode) => (
-                      <button
-                        key={mode}
-                        type="button"
-                        onClick={() => setImageMode(mode)}
-                        className={cn(
-                          "flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
-                          imageMode === mode
-                            ? "border-primary bg-accent text-accent-foreground"
-                            : "border-border text-muted-foreground hover:bg-muted",
-                        )}
-                      >
-                        {mode === "describe"
-                          ? dictionary.workspace.requestPanel.imageModeDescribe
-                          : dictionary.workspace.requestPanel.imageModeSimilar}
-                      </button>
-                    ))}
-                  </div>
-                  <input type="hidden" name="imageMode" value={imageMode} />
-                </div>
+              <div className="relative w-fit">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={imagePreview}
+                  alt=""
+                  className="h-32 w-32 rounded-lg border border-border object-cover"
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="icon-sm"
+                  className="absolute -end-2 -top-2 rounded-full"
+                  onClick={removeImage}
+                >
+                  <X className="size-3.5" />
+                </Button>
               </div>
             ) : (
               <Button
